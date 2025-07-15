@@ -1,52 +1,35 @@
 {
-  "name": "markdownld",
-  "version": "0.2.0",
-  "description": "RDF Linked Data in Markdown",
-  "keywords": [
-    "linked-data",
-    "rdf",
-    "markdown"
-  ],
-  "homepage": "https://github.com/ozekik/markdown-ld",
-  "repository": "https://github.com/ozekik/markdown-ld",
-  "license": "MIT",
-  "author": "Kentaro Ozeki <kentaro.ozeki+dev@gmail.com>",
-  "main": "dist/markdownld.js",
-  "module": "dist/markdownld.mjs",
-  "bin": {
-    "markdownld": "bin/cli.mjs"
-  },
-  "files": [
-    "dist",
-    "bin"
-  ],
-  "exports": {
-    "./package.json": "./package.json",
-    ".": {
-      "import": "./dist/markdownld.mjs",
-      "require": "./dist/markdownld.js"
-    }
-  },
+  "name": "@mediaprophet/markdown-ld",
+  "version": "0.3.0",
+  "description": "Markdown-LD parser for RDF linked data, supporting Semantic Weaver's syntax for ontology definitions in Markdown.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
-    "build": "rollup -c",
-    "watch": "rollup -c -w",
-    "prepack": "npm run build"
+    "build": "tsc",
+    "test": "jest",
+    "prepublishOnly": "npm run build"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mediaprophet/markdown-ld.git"
+  },
+  "keywords": ["markdown", "rdf", "linked-data", "semantic-weaver", "ontology"],
+  "author": "MediaProphet",
+  "license": "MIT",
   "dependencies": {
-    "@frogcat/ttl2jsonld": "0.0.9",
-    "remark-parse": "^11.0.0",
     "unified": "^11.0.4",
-    "unified-args": "^11.0.1",
-    "unist-util-find": "^3.0.0",
-    "unist-util-find-after": "^5.0.0",
-    "unist-util-is": "^6.0.0",
-    "unist-util-visit": "^5.0.0"
+    "remark-parse": "^11.0.0",
+    "remark-stringify": "^11.0.0",
+    "@frogcat/ttl2jsonld": "^0.2.4"
   },
   "devDependencies": {
-    "@rollup/plugin-commonjs": "^25.0.7",
-    "@rollup/plugin-json": "^6.1.0",
-    "@rollup/plugin-node-resolve": "^15.2.3",
-    "@rollup/plugin-replace": "^5.0.5",
-    "rollup": "^4.16.4"
+    "@types/jest": "^29.5.12",
+    "@types/node": "^20.14.12",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.2.5",
+    "typescript": "^5.5.4"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

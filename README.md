@@ -1,75 +1,83 @@
-# Markdown-LD
+# @mediaprophet/markdown-ld
 
-[![npm](https://img.shields.io/npm/v/markdownld)](https://www.npmjs.com/package/markdownld)
+A Markdown-LD parser for RDF linked data, designed for the [Semantic Weaver](https://github.com/mediaprophet/obsidian-semantic-weaver) Obsidian plugin. Converts Markdown files with RDF annotations into JSON-LD and Turtle formats.
 
-Markdown-LD is a simple syntax for humans to write RDF Linked Data in Markdown.
-It is a kind of [literate programming](https://en.wikipedia.org/wiki/Literate_programming) for Turtle/TriG, and useful to publish and maintain linked data along with documentation.
+## Installation
 
-## Playground
-
-Try it online! <https://ozekik.github.io/markdown-ld/>
-
-## Specification and Examples
-
-See [SPEC.md](SPEC.md), which is compiled into [SPEC.ttl](SPEC.ttl) (Turtle) and [SPEC.json](SPEC.json) (JSON-LD).
-
-For a more realistic example from the FOAF (Friend of a Friend) Vocabulary, see [examples/foaf.md](examples/foaf.md), [examples/foaf.ttl](examples/foaf.ttl) (Turtle), and [examples/foaf.json](examples/foaf.json) (JSON-LD).
-
-## Markdown-LD Compiler
-
-A referential compiler to Turtle and other RDF formats is implemented as a [unified](https://github.com/unifiedjs/unified)/[remark](https://github.com/remarkjs/remark) plugin and CLI.
-
-Currently Turtle (default) and JSON-LD (with [@frogcat/ttl2jsonld](https://github.com/frogcat/ttl2jsonld)) are built-in formats for the output.
-You can supply a Turtle output to [N3.js](https://github.com/rdfjs/N3.js), [graphy.js](https://github.com/blake-regalia/graphy.js), and other libraries to translate it to other formats.
-
-### CLI
-
-Installation:
-
-```sh
-npm install -g markdownld
+```bash
+npm install @mediaprophet/markdown-ld
 ```
 
-Usage:
+## Usage
 
-```sh
-markdownld input.md -o output.ttl
-markdownld input.md -o output.json --setting 'format: "jsonld"'
+### In Node.js
+
+```javascript
+import { markdownld, markdownldToTurtle } from '@mediaprophet/markdown-ld';
+import fs from 'fs';
+
+const content = fs.readFileSync('ontology.md', 'utf-8');
+const jsonld = markdownld(content);
+console.log(jsonld);
+
+const turtle = await markdownldToTurtle(content);
+console.log(turtle);
 ```
 
-For more information, see [unifiedjs/unified-args](https://github.com/unifiedjs/unified-args), on which Markdown-LD CLI is built.
+### Syntax
 
-### Module
+Markdown-LD files define RDF ontologies using:
+- **Namespaces**: `[prefix]: URI` (e.g., `[schema]: http://schema.org`).
+- **Entities**: `[Entity]{typeof=type property=value}` (e.g., `[Person]{typeof=rdfs:Class rdfs:label="Person"}`).
 
-Installation:
+Example (`ontology.md`):
 
-```sh
-npm install markdownld --save
+```
+[schema]: http://schema.org
+[rdfs]: http://www.w3.org/2000/01/rdf-schema#
+[Person]{typeof=rdfs:Class rdfs:label="Person"}
+[name]{typeof=rdfs:Property schema:domainIncludes=[Person]; schema:rangeIncludes=[schema:Text]; rdfs:label="Name"}
 ```
 
-Usage:
+### Output
 
-```js
-const unified = require('unified');
-const markdown = require('remark-parse');
-const markdownld = require('markdownld');
+The above example produces JSON-LD:
 
-const input =
-  '# Example\n\n`<http://example.com/>`\n\n' +
-  '## Alice\n\n`<#Alice>`\n\n' +
-  '### Knows\n\n`foaf:knows`\n\n' +
-  '* Bob `<#Bob>`\n';
-
-const processor = unified().use(markdown).use(markdownld);
-
-processor.process(input, (err, { contents }) => {
-  console.log(contents);  // <#Alice> foaf:knows <#Bob> .
-});
+```json
+{
+  "@context": {
+    "schema": "http://schema.org",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#"
+  },
+  "@graph": [
+    {
+      "@id": "http://example.org/Person",
+      "@type": "rdfs:Class",
+      "rdfs:label": "Person"
+    },
+    {
+      "@id": "http://example.org/name",
+      "@type": "rdfs:Property",
+      "schema:domainIncludes": "http://example.org/Person",
+      "schema:rangeIncludes": "http://schema.org/Text",
+      "rdfs:label": "Name"
+    }
+  ]
+}
 ```
 
-## Todo
+## Integration with Semantic Weaver
 
-- [x] Publish playground
-- [ ] Make TriG default
-- [ ] Do input validation for better exception messages
-- [ ] Support compilation to more RDF formats
+Used by the Semantic Weaver plugin to parse `templates/ontology/*.md` files into RDF triples for ontology management.
+
+## Development
+
+```bash
+npm install
+npm run build
+npm test
+```
+
+## License
+
+MIT

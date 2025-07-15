@@ -1,85 +1,68 @@
-# Markdown-LD
+# Markdown-LD Specification
 
-`<https://github.com/ozekik/markdown-ld/blob/master/SPEC.md>`
+Markdown-LD is a syntax for defining RDF linked data in Markdown, used by the [Semantic Weaver](https://github.com/mediaprophet/obsidian-semantic-weaver) Obsidian plugin.
 
+## Syntax
+
+### Namespaces
+- Format: `[prefix]: URI`
+- Declared at the top of the file.
+- Example:
+  ```
+  [schema]: http://schema.org
+  [rdfs]: http://www.w3.org/2000/01/rdf-schema#
+  ```
+
+### Entities
+- Format: `[Entity]{typeof=type property=value}`
+- Attributes are space-separated key-value pairs.
+- Example:
+  ```
+  [Person]{typeof=rdfs:Class rdfs:label="Person"}
+  [name]{typeof=rdfs:Property schema:domainIncludes=[Person]; schema:rangeIncludes=[schema:Text]; rdfs:label="Name"}
+  ```
+
+### Rules
+- Namespaces must be defined before entities.
+- Entity IDs are enclosed in square brackets (e.g., `[Person]`).
+- Attributes are in curly braces, with `typeof` specifying the RDF type.
+- Properties use namespace prefixes (e.g., `rdfs:label`) or full URIs.
+- Values are either URIs (in square brackets) or literals (in quotes for strings).
+
+## Example
+
+Input (`ontology.md`):
 ```
-@base <https://github.com/ozekik/markdown-ld/blob/master/SPEC.md> .
-@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
-@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
-@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
-@prefix ex: <http://example.com/> .
+[schema]: http://schema.org
+[rdfs]: http://www.w3.org/2000/01/rdf-schema#
+[Person]{typeof=rdfs:Class rdfs:label="Person"}
+[name]{typeof=rdfs:Property schema:domainIncludes=[Person]; schema:rangeIncludes=[schema:Text]; rdfs:label="Name"}
 ```
 
-A Markdown-LD document MUST have a level-1 heading which represents the name of the graph described under the heading.
-
-Level-1, level-2, and level-3 headings MUST be immediately followed by a line of inline code for its RDF term in Turtle syntax.
-
-A pair of a heading and a line of inline code is called *Markdown-LD heading*.
-
-A level-1 Markdown-LD heading MAY be immediately followed by a code block for  `@base` and `@prefix` directives and other implicit RDF triples in Turtle syntax.
-
-Until the next heading, Markdown texts after the code block are treated as comments.
-
-#### TODO
-
-- Incorporate TriG for multiple level-1 headings and graphs
-
-## Example Entity Foo
-
-`<#example-entity-foo>`
-
+Output (JSON-LD):
+```json
+{
+  "@context": {
+    "schema": "http://schema.org",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#"
+  },
+  "@graph": [
+    {
+      "@id": "http://example.org/Person",
+      "@type": "rdfs:Class",
+      "rdfs:label": "Person"
+    },
+    {
+      "@id": "http://example.org/name",
+      "@type": "rdfs:Property",
+      "schema:domainIncludes": "http://example.org/Person",
+      "schema:rangeIncludes": "http://schema.org/Text",
+      "rdfs:label": "Name"
+    }
+  ]
+}
 ```
-<#example-entity-foo> rdf:type rdfs:Resource .
-```
 
-The subject of an RDF triple is represented by a level-2 Markdown-LD heading.
+## Implementation
 
-A level-2 Markdown-LD heading MAY be immediately followed by a code block for implicit RDF triples in Turtle syntax.
-
-Until the next heading, Markdown texts after the code block are treated as comments.
-
-### Example Predicate 1
-
-`<#example-predicate-1>`
-
-- `"Some literal"`
-- Some literal `"Some literal"@en`
-- `42`
-- Forty-two `"42"^^xsd:integer`
-- Some entity `<http://example.com/someEntity>`
-- Some entity `ex:someEntity`
-- [Example Entity Bar](#example-entity-bar) (hyperlinks would be helpful) `<#example-entity-bar>`
-- Some blank node `[ ex:name "Alice" ]`
-
-The predicate of an RDF triple is represented by a level-3 Markdown-LD heading.
-
-A level-3 Markdown-LD heading MUST be immediately followed by a list of one or more items, each of which represents the object of an RDF triple.
-
-Every item of the list MUST be the form of:
-
-- (optional Markdown comment) `(RDF term as inline code)`
-
-Until the next heading, Markdown texts after the list are treated as comments.
-
-#### TODO
-
-- Consider allowing code blocks as well as inline codes in list items.
-- Support [RDF*](https://w3c.github.io/rdf-star/) by nested lists.
-
-## Example Entity Bar
-
-`<#example-entity-bar>`
-
-This is an example of a much simpler single triple.
-
-### Example Predicate 1
-
-`<#example-predicate-1>`
-
-- `"Some literal"`
-
-### Example Predicate 2
-
-`<#example-predicate-2>`
-
-- Some entity `<http://example.com/someEntity>`
+The `@mediaprophet/markdown-ld` package uses `unified` and `remark-parse` to parse Markdown-LD into a JSON-LD `@graph`. See `README.md` for usage.
